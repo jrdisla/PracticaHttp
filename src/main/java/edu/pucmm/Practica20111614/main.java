@@ -6,7 +6,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -39,12 +38,13 @@ public class main {
         try {
 
 
-            Document doc = Jsoup.connect(URL).get();
+            Document doc;
+            Connection.Response d = Jsoup.connect(URL).execute();
 
-            Elements space = doc.body().getElementsByTag("p");
-            Elements forms = doc.select("form");
-            Elements formsPost = doc.select("form[method=post]");
-            Elements formsGet = doc.select("form[method=get]");
+            Elements space = d.parse().getElementsByTag("p");
+            Elements forms = d.parse().select("form");
+            Elements formsPost = d.parse().select("form[method=post]");
+            Elements formsGet = d.parse().select("form[method=get]");
 
             ArrayList<Elements> inputs = new ArrayList<Elements>();
             ArrayList<Elements> spacess = new ArrayList<Elements>();
@@ -59,9 +59,7 @@ public class main {
                     spacess.add(pace.getElementsByTag("img"));
             }
 
-            String[] lines = doc.html().split("\r\n|\r|\n");
-
-            System.out.println("Cantidad de lineas: " + lines.length);
+            System.out.println("Cantidad de lineas: " + d.body().split("\n").length);
             System.out.println("Cantidad de Parrafos: " + space.size());
             System.out.println("Cantidad de imagenes entre parrafos: " + spacess.size());
             System.out.println("forms (post): " + formsPost.size());
@@ -69,19 +67,24 @@ public class main {
 
 
             System.out.println("Etiquetas Input de forms: ");
-
+ int count = 1;
             for (Elements items : inputs) {
-                System.out.println("Form: ");
+                System.out.println("Form: " + count);
                 for (Element input : items) {
                     String typeInput = input.attr("type");
                     System.out.println("Type: " + typeInput );
                 }
-
+                System.out.println("\n");
+              count++;
             }
 
-            Connection.Response d = Jsoup.connect(URL ).data("asignatura", "practica1").method(Connection.Method.POST).execute();
-            System.out.println(d.body());
 
+          for (Element post: formsPost)
+          {
+              String urlP = post.absUrl("action");
+              doc = Jsoup.connect(urlP).data("asignatura","practica1").post();
+              System.out.println(doc.body().toString());
+          }
         }
 
         catch (IOException e)
